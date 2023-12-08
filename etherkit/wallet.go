@@ -101,10 +101,10 @@ func (w *DefaultEthWallet) GetBalance() (*big.Int, error) {
 	return w.getEthClient().BalanceAt(context.Background(), w.GetAddress(), nil)
 }
 
-// NewTx 构建一笔交易。nonce,gasLimit传0表示字段计算；gasPrice穿nil或者big.NewInt(0)表示gasPrice自动计算。
+// NewTx 构建一笔交易。nonce传-1表示字段计算；gasLimit传0表示字段计算；gasPrice穿nil或者big.NewInt(0)表示gasPrice自动计算。
 func (w *DefaultEthWallet) NewTx(to common.Address, nonce, gasLimit uint64, gasPrice, value *big.Int, data []byte) (*types.Transaction, error) {
 
-	if nonce == 0 {
+	if nonce == -1 {
 		var err error
 		nonce, err = w.GetNonce()
 		if err != nil {
@@ -131,7 +131,7 @@ func (w *DefaultEthWallet) NewTx(to common.Address, nonce, gasLimit uint64, gasP
 	return NewTx(to, nonce, gasLimit, gasPrice, value, data)
 }
 
-// SendTx 发送交易。nonce,gasLimit传0表示字段计算；gasPrice穿nil或者big.NewInt(0)表示gasPrice自动计算。
+// SendTx 发送交易。nonce传-1表示字段计算；gasLimit传0表示字段计算；gasPrice穿nil或者big.NewInt(0)表示gasPrice自动计算。
 func (w *DefaultEthWallet) SendTx(to common.Address, nonce, gasLimit uint64, gasPrice, value *big.Int, data []byte) (common.Hash, error) {
 
 	tx, err := w.NewTx(to, nonce, gasLimit, gasPrice, value, data)
@@ -147,7 +147,7 @@ func (w *DefaultEthWallet) SendTx(to common.Address, nonce, gasLimit uint64, gas
 	return w.SendSignedTx(signedTx)
 }
 
-// NewTxWithHexInput 构建一笔交易，使用0x开头的input。nonce,gasLimit传0表示字段计算；gasPrice穿nil或者big.NewInt(0)表示gasPrice自动计算。
+// NewTxWithHexInput 构建一笔交易，使用0x开头的input。nonce传-1表示字段计算；gasLimit传0表示字段计算；gasPrice穿nil或者big.NewInt(0)表示gasPrice自动计算。
 func (w *DefaultEthWallet) NewTxWithHexInput(to common.Address, nonce, gasLimit uint64, gasPrice, value *big.Int, input string) (*types.Transaction, error) {
 	data, err := hexutil.Decode(input)
 	if err != nil {
@@ -156,7 +156,7 @@ func (w *DefaultEthWallet) NewTxWithHexInput(to common.Address, nonce, gasLimit 
 	return w.NewTx(to, nonce, gasLimit, gasPrice, value, data)
 }
 
-// SendTxWithHexInput 发送一笔交易，使用0x开头的input。nonce,gasLimit传0表示字段计算；gasPrice穿nil或者big.NewInt(0)表示gasPrice自动计算。
+// SendTxWithHexInput 发送一笔交易，使用0x开头的input。nonce传-1表示字段计算；gasLimit传0表示字段计算；gasPrice穿nil或者big.NewInt(0)表示gasPrice自动计算。
 func (w *DefaultEthWallet) SendTxWithHexInput(to common.Address, nonce, gasLimit uint64, gasPrice, value *big.Int, input string) (common.Hash, error) {
 	data, err := hexutil.Decode(input)
 	if err != nil {
@@ -166,7 +166,7 @@ func (w *DefaultEthWallet) SendTxWithHexInput(to common.Address, nonce, gasLimit
 }
 
 // BuildTxOpts 构建交易的选项
-func (w *DefaultEthWallet) BuildTxOpts(value, nonce *big.Int) (*bind.TransactOpts, error) {
+func (w *DefaultEthWallet) BuildTxOpts(value, nonce, gasPrice *big.Int) (*bind.TransactOpts, error) {
 
 	chainId, err := w.ep.GetChainID()
 	if err != nil {
@@ -177,15 +177,25 @@ func (w *DefaultEthWallet) BuildTxOpts(value, nonce *big.Int) (*bind.TransactOpt
 
 	txOpts.Value = value
 
-	gasPrice, err := w.GetEthProvider().GetSuggestGasPrice()
-	if err != nil {
-		return nil, err
+	if gasPrice != nil && gasPrice.Sign() == 1 {
+		txOpts.GasPrice = gasPrice
+	} else {
+		_gasPrice, err := w.GetEthProvider().GetSuggestGasPrice()
+		if err != nil {
+			return nil, err
+		}
+		txOpts.GasPrice = _gasPrice
 	}
-	txOpts.GasPrice = gasPrice
 
-	// 如果nonce不为nil，就用传入的值
-	if nonce != nil {
+	// 如果nonce不为nil，就用传入的值（这里默认 nonce >0 ）
+	if nonce != nil && nonce.Sign() > 0 {
 		txOpts.Nonce = nonce
+	} else {
+		_nonce, err := w.GetNonce()
+		if err != nil {
+			return nil, err
+		}
+		txOpts.Nonce = big.NewInt(int64(_nonce))
 	}
 
 	return txOpts, nil
