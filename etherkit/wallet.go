@@ -26,7 +26,7 @@ type EthWallet interface {
 	SendTx(to common.Address, nonce, gasLimit uint64, gasPrice, value *big.Int, data []byte) (common.Hash, error)
 	NewTxWithHexInput(to common.Address, nonce, gasLimit uint64, gasPrice, value *big.Int, input string) (*types.Transaction, error)
 	SendTxWithHexInput(to common.Address, nonce, gasLimit uint64, gasPrice, value *big.Int, input string) (common.Hash, error)
-	BuildTxOpts(value, nonce *big.Int) (*bind.TransactOpts, error)
+	BuildTxOpts(value, nonce, gasPrice *big.Int) (*bind.TransactOpts, error)
 	SignTx(tx *types.Transaction) (*types.Transaction, error)
 	SendSignedTx(signedTx *types.Transaction) (common.Hash, error)
 	Signature(data []byte) ([]byte, error)
