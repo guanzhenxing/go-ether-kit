@@ -27,6 +27,8 @@ const (
 	EAddress    = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
 )
 
+const ZeroHash = "0x0000000000000000000000000000000000000000000000000000000000000000"
+
 // IsValidAddress 验证是否是十六进制地址
 func IsValidAddress(iAddress interface{}) bool {
 	re := regexp.MustCompile("^0x[0-9a-fA-F]{40}$")
@@ -251,4 +253,9 @@ func DecodeRawTxHex(rawTx string) (*types.Transaction, error) {
 	}
 
 	return tx, nil
+}
+
+// GetMaxUint256 获得合约中MaxUint256
+func GetMaxUint256() *big.Int {
+	return new(big.Int).Sub(new(big.Int).Exp(big.NewInt(2), big.NewInt(256), nil), big.NewInt(1))
 }
