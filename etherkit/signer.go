@@ -7,71 +7,72 @@ import (
 	"github.com/pkg/errors"
 )
 
-// EthSigner ETH账户
-type EthSigner interface {
+// Signer ETH账户
+type Signer interface {
 	GetAddress() common.Address
 	GetPrivateKey() *ecdsa.PrivateKey
 }
 
-type DefaultEthSigner struct {
+type EtherSigner struct {
 	pk      *ecdsa.PrivateKey
 	address common.Address
 }
 
-func newEthSignerFromPk(pk *ecdsa.PrivateKey) (*DefaultEthSigner, error) {
-	return &DefaultEthSigner{
+// NewEtherSigner 创建一个默认的账号信息
+func NewEtherSigner() (*EtherSigner, error) {
+	pk, err := GeneratePrivateKey()
+	if err != nil {
+		return nil, errors.Wrap(err, "generate private key error")
+	}
+	return NewEtherSignerFromPrivateKey(pk)
+}
+
+// NewEtherSignerFromPrivateKey 使用私钥创建一个账号信息
+func NewEtherSignerFromPrivateKey(pk *ecdsa.PrivateKey) (*EtherSigner, error) {
+	return &EtherSigner{
 		pk:      pk,
 		address: PrivateKeyToAddress(pk),
 	}, nil
 }
 
-// NewEthSigner 创建一个默认的账号信息
-func NewEthSigner() (*DefaultEthSigner, error) {
-	pk, err := GeneratePrivateKey()
-	if err != nil {
-		return nil, errors.Wrap(err, "generate private key error")
-	}
-	return newEthSignerFromPk(pk)
+// NewEtherSignerFromMnemonic 使用助记词创建一个账号信息
+func NewEtherSignerFromMnemonic(mnemonic string) (*EtherSigner, error) {
+	return NewEtherSignerFromMnemonicAndAccountId(mnemonic, 0)
 }
 
-// NewEthSignerFromMnemonic 使用助记词创建一个账号信息
-func NewEthSignerFromMnemonic(mnemonic string) (*DefaultEthSigner, error) {
-	return NewEthSignerFromMnemonicAndAccountId(mnemonic, 0)
-}
-
-// NewEthSignerFromMnemonicAndAccountId 使用助记词创建一个账号信息
-func NewEthSignerFromMnemonicAndAccountId(mnemonic string, accountId uint32) (*DefaultEthSigner, error) {
+// NewEtherSignerFromMnemonicAndAccountId 使用助记词创建一个账号信息
+func NewEtherSignerFromMnemonicAndAccountId(mnemonic string, accountId uint32) (*EtherSigner, error) {
 	pk, err := BuildPrivateKeyFromMnemonic(mnemonic, accountId)
 	if err != nil {
 		return nil, err
 	}
-	return newEthSignerFromPk(pk)
+	return NewEtherSignerFromPrivateKey(pk)
 }
 
 // NewEthSignerFromRawPrivateKey 使用私钥创建一个账号信息
-func NewEthSignerFromRawPrivateKey(rawPk []byte) (*DefaultEthSigner, error) {
+func NewEthSignerFromRawPrivateKey(rawPk []byte) (*EtherSigner, error) {
 	pk, err := crypto.ToECDSA(rawPk)
 	if err != nil {
 		return nil, errors.Wrap(err, "invalid raw private key")
 	}
-	return newEthSignerFromPk(pk)
+	return NewEtherSignerFromPrivateKey(pk)
 }
 
-// NewEthSignerFromHexPrivateKey 使用私钥创建一个账号信息
-func NewEthSignerFromHexPrivateKey(hexPk string) (*DefaultEthSigner, error) {
+// NewEtherSignerFromHexPrivateKey 使用私钥创建一个账号信息
+func NewEtherSignerFromHexPrivateKey(hexPk string) (*EtherSigner, error) {
 	pk, err := BuildPrivateKeyFromHex(hexPk)
 	if err != nil {
 		return nil, errors.Wrap(err, "invalid hex private key")
 	}
-	return newEthSignerFromPk(pk)
+	return NewEtherSignerFromPrivateKey(pk)
 }
 
 // GetAddress 获得地址
-func (s *DefaultEthSigner) GetAddress() common.Address {
+func (s *EtherSigner) GetAddress() common.Address {
 	return s.address
 }
 
 // GetPrivateKey 获得私钥
-func (s *DefaultEthSigner) GetPrivateKey() *ecdsa.PrivateKey {
+func (s *EtherSigner) GetPrivateKey() *ecdsa.PrivateKey {
 	return s.pk
 }
