@@ -14,8 +14,8 @@ import (
 	"math/big"
 )
 
-// EtherWallet 钱包信息
-type EtherWallet interface {
+// Wallet 钱包信息
+type Wallet interface {
 	GetEthSigner() Signer
 	GetEthProvider() Provider
 	GetClient() *ethclient.Client
@@ -34,21 +34,13 @@ type EtherWallet interface {
 	CallContract(contractAddress common.Address, contractAbi abi.ABI, functionName string, params ...interface{}) ([]interface{}, error)
 }
 
-type Wallet struct {
+type EtherWallet struct {
 	es Signer
 	ep Provider
 }
 
-// NewEtherWallet 新建Wallet
-func NewEtherWallet(es Signer, ep Provider) (*Wallet, error) {
-	return &Wallet{
-		es: es,
-		ep: ep,
-	}, nil
-}
-
-// NewWallet 新建一个Wallet
-func NewWallet(hexPk string, rawUrl string) (*Wallet, error) {
+// NewEtherWallet 新建一个Wallet
+func NewEtherWallet(hexPk string, rawUrl string) (*EtherWallet, error) {
 	es, err := NewEtherSignerFromHexPrivateKey(hexPk)
 	if err != nil {
 		return nil, err
@@ -59,55 +51,63 @@ func NewWallet(hexPk string, rawUrl string) (*Wallet, error) {
 		return nil, err
 	}
 
-	return NewEtherWallet(es, ep)
+	return NewEtherWallet1(es, ep)
+}
+
+// NewEtherWallet1 新建Wallet
+func NewEtherWallet1(es Signer, ep Provider) (*EtherWallet, error) {
+	return &EtherWallet{
+		es: es,
+		ep: ep,
+	}, nil
 }
 
 // GetEthClient 获得ethClient客户端
-func (w *Wallet) getEthClient() *ethclient.Client {
+func (w *EtherWallet) getEthClient() *ethclient.Client {
 	return w.ep.GetEthClient()
 }
 
 // GetRpcClient 获得rpcClient客户端
-func (w *Wallet) getRpcClient() *rpc.Client {
+func (w *EtherWallet) getRpcClient() *rpc.Client {
 	return w.ep.GetRpcClient()
 }
 
 // GetEthSigner 获得EthSinger
-func (w *Wallet) GetEthSigner() Signer {
+func (w *EtherWallet) GetEthSigner() Signer {
 	return w.es
 }
 
 // GetEthProvider 获得EthProvider
-func (w *Wallet) GetEthProvider() Provider {
+func (w *EtherWallet) GetEthProvider() Provider {
 	return w.ep
 }
 
-func (w *Wallet) GetClient() *ethclient.Client {
+func (w *EtherWallet) GetClient() *ethclient.Client {
 	return w.getEthClient()
 }
 
 // GetAddress 获得地址
-func (w *Wallet) GetAddress() common.Address {
+func (w *EtherWallet) GetAddress() common.Address {
 	return w.es.GetAddress()
 }
 
 // CloseWallet 关闭Wallet
-func (w *Wallet) CloseWallet() {
+func (w *EtherWallet) CloseWallet() {
 	w.ep.Close()
 }
 
 // GetNonce 获得nonce
-func (w *Wallet) GetNonce() (uint64, error) {
+func (w *EtherWallet) GetNonce() (uint64, error) {
 	return w.getEthClient().PendingNonceAt(context.Background(), w.GetAddress())
 }
 
 // GetBalance 获得本位币的约
-func (w *Wallet) GetBalance() (*big.Int, error) {
+func (w *EtherWallet) GetBalance() (*big.Int, error) {
 	return w.getEthClient().BalanceAt(context.Background(), w.GetAddress(), nil)
 }
 
 // NewTx 构建一笔交易。nonce传0表示字段计算；gasLimit传0表示字段计算；gasPrice穿nil或者big.NewInt(0)表示gasPrice自动计算。
-func (w *Wallet) NewTx(to common.Address, nonce, gasLimit uint64, gasPrice, value *big.Int, data []byte) (*types.Transaction, error) {
+func (w *EtherWallet) NewTx(to common.Address, nonce, gasLimit uint64, gasPrice, value *big.Int, data []byte) (*types.Transaction, error) {
 
 	if nonce == 0 {
 		var err error
@@ -137,7 +137,7 @@ func (w *Wallet) NewTx(to common.Address, nonce, gasLimit uint64, gasPrice, valu
 }
 
 // SendTx 发送交易。nonce传0表示字段计算；gasLimit传0表示字段计算；gasPrice穿nil或者big.NewInt(0)表示gasPrice自动计算。
-func (w *Wallet) SendTx(to common.Address, nonce, gasLimit uint64, gasPrice, value *big.Int, data []byte) (common.Hash, error) {
+func (w *EtherWallet) SendTx(to common.Address, nonce, gasLimit uint64, gasPrice, value *big.Int, data []byte) (common.Hash, error) {
 
 	tx, err := w.NewTx(to, nonce, gasLimit, gasPrice, value, data)
 	if err != nil {
@@ -153,7 +153,7 @@ func (w *Wallet) SendTx(to common.Address, nonce, gasLimit uint64, gasPrice, val
 }
 
 // NewTxWithHexInput 构建一笔交易，使用0x开头的input。nonce传0表示字段计算；gasLimit传0表示字段计算；gasPrice穿nil或者big.NewInt(0)表示gasPrice自动计算。
-func (w *Wallet) NewTxWithHexInput(to common.Address, nonce, gasLimit uint64, gasPrice, value *big.Int, input string) (*types.Transaction, error) {
+func (w *EtherWallet) NewTxWithHexInput(to common.Address, nonce, gasLimit uint64, gasPrice, value *big.Int, input string) (*types.Transaction, error) {
 	data, err := hexutil.Decode(input)
 	if err != nil {
 		return nil, err
@@ -162,7 +162,7 @@ func (w *Wallet) NewTxWithHexInput(to common.Address, nonce, gasLimit uint64, ga
 }
 
 // SendTxWithHexInput 发送一笔交易，使用0x开头的input。nonce传0表示字段计算；gasLimit传0表示字段计算；gasPrice穿nil或者big.NewInt(0)表示gasPrice自动计算。
-func (w *Wallet) SendTxWithHexInput(to common.Address, nonce, gasLimit uint64, gasPrice, value *big.Int, input string) (common.Hash, error) {
+func (w *EtherWallet) SendTxWithHexInput(to common.Address, nonce, gasLimit uint64, gasPrice, value *big.Int, input string) (common.Hash, error) {
 	data, err := hexutil.Decode(input)
 	if err != nil {
 		return [32]byte{}, err
@@ -171,7 +171,7 @@ func (w *Wallet) SendTxWithHexInput(to common.Address, nonce, gasLimit uint64, g
 }
 
 // BuildTxOpts 构建交易的选项
-func (w *Wallet) BuildTxOpts(value, nonce, gasPrice *big.Int) (*bind.TransactOpts, error) {
+func (w *EtherWallet) BuildTxOpts(value, nonce, gasPrice *big.Int) (*bind.TransactOpts, error) {
 
 	chainId, err := w.ep.GetChainID()
 	if err != nil {
@@ -207,7 +207,7 @@ func (w *Wallet) BuildTxOpts(value, nonce, gasPrice *big.Int) (*bind.TransactOpt
 }
 
 // SignTx 对交易进行签名
-func (w *Wallet) SignTx(tx *types.Transaction) (*types.Transaction, error) {
+func (w *EtherWallet) SignTx(tx *types.Transaction) (*types.Transaction, error) {
 
 	chainId, err := w.ep.GetChainID()
 	if err != nil {
@@ -225,7 +225,7 @@ func (w *Wallet) SignTx(tx *types.Transaction) (*types.Transaction, error) {
 }
 
 // SendSignedTx 发送签名后的Tx
-func (w *Wallet) SendSignedTx(signedTx *types.Transaction) (common.Hash, error) {
+func (w *EtherWallet) SendSignedTx(signedTx *types.Transaction) (common.Hash, error) {
 	err := w.getEthClient().SendTransaction(context.Background(), signedTx)
 	if err != nil {
 		return [32]byte{}, err
@@ -234,7 +234,7 @@ func (w *Wallet) SendSignedTx(signedTx *types.Transaction) (common.Hash, error) 
 }
 
 // Signature 生成一个签名
-func (w *Wallet) Signature(data []byte) ([]byte, error) {
+func (w *EtherWallet) Signature(data []byte) ([]byte, error) {
 	key := w.es.GetPrivateKey()
 	hash := crypto.Keccak256Hash(data)
 
@@ -242,7 +242,7 @@ func (w *Wallet) Signature(data []byte) ([]byte, error) {
 }
 
 // CallContract 调用合约的方法，无需创建交易
-func (w *Wallet) CallContract(contractAddress common.Address, contractAbi abi.ABI, functionName string, params ...interface{}) ([]interface{}, error) {
+func (w *EtherWallet) CallContract(contractAddress common.Address, contractAbi abi.ABI, functionName string, params ...interface{}) ([]interface{}, error) {
 
 	inputData, err := BuildContractInputData(contractAbi, functionName, params...)
 	if err != nil {

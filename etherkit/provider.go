@@ -31,6 +31,12 @@ type Provider interface {
 	GetFromAddress(tx *types.Transaction) (common.Address, error)
 }
 
+type EtherProvider struct {
+	rc      *rpc.Client
+	ec      *ethclient.Client
+	chainId *big.Int
+}
+
 func NewEtherProvider(rawUrl string) (*EtherProvider, error) {
 
 	rpcClient, err := rpc.Dial(rawUrl)
@@ -53,12 +59,6 @@ func NewEtherProviderWithChainId(rawUrl string, chainId int64) (*EtherProvider, 
 	p.chainId = big.NewInt(chainId)
 
 	return p, nil
-}
-
-type EtherProvider struct {
-	rc      *rpc.Client
-	ec      *ethclient.Client
-	chainId *big.Int
 }
 
 // GetEthClient 获得ethClient客户端
