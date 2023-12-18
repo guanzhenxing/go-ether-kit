@@ -5,6 +5,7 @@ go 1.21
 require (
 	github.com/ethereum/go-ethereum v1.12.2
 	github.com/miguelmota/go-ethereum-hdwallet v0.1.1
+	github.com/miraclesu/uniswap-sdk-go v0.2.9
 	github.com/pkg/errors v0.9.1
 	github.com/shopspring/decimal v1.3.1
 	golang.org/x/crypto v0.16.0
@@ -29,6 +30,7 @@ require (
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
 	github.com/tklauser/numcpus v0.6.1 // indirect
 	github.com/tyler-smith/go-bip39 v1.1.0 // indirect
+	github.com/wadey/go-rounding v1.1.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/sys v0.15.0 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
