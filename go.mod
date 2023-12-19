@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/ethereum/go-ethereum v1.12.2
-	github.com/miguelmota/go-ethereum-hdwallet v0.1.1
+	github.com/miguelmota/go-ethereum-hdwallet v0.1.2
 	github.com/pkg/errors v0.9.1
 	github.com/shopspring/decimal v1.3.1
 	golang.org/x/crypto v0.16.0
