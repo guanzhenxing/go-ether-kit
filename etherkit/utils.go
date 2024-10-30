@@ -84,8 +84,12 @@ func BuildPrivateKeyFromHex(privateKeyHex string) (*ecdsa.PrivateKey, error) {
 	return privateKey, nil
 }
 
-// BuildPrivateKeyFromMnemonic 从助记词获得私钥
-func BuildPrivateKeyFromMnemonic(mnemonic string, accountId uint32) (*ecdsa.PrivateKey, error) {
+func BuildPrivateKeyFromMnemonic(mnemonic string) (*ecdsa.PrivateKey, error) {
+	return BuildPrivateKeyFromMnemonicAndAccountId(mnemonic, 0)
+}
+
+// BuildPrivateKeyFromMnemonicAndAccountId 从助记词获得私钥
+func BuildPrivateKeyFromMnemonicAndAccountId(mnemonic string, accountId uint32) (*ecdsa.PrivateKey, error) {
 	wallet, err := hdwallet.NewFromMnemonic(mnemonic)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create HD wallet from mnemonic")

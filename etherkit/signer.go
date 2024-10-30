@@ -42,7 +42,7 @@ func NewSignerFromMnemonic(mnemonic string) (*Signer, error) {
 
 // NewSignerFromMnemonicAndAccountId 使用助记词创建一个账号信息
 func NewSignerFromMnemonicAndAccountId(mnemonic string, accountId uint32) (*Signer, error) {
-	pk, err := BuildPrivateKeyFromMnemonic(mnemonic, accountId)
+	pk, err := BuildPrivateKeyFromMnemonicAndAccountId(mnemonic, accountId)
 	if err != nil {
 		return nil, err
 	}
