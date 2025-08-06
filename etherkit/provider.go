@@ -128,7 +128,7 @@ func (p *Provider) GetTransactionReceipt(txHash common.Hash) (*types.Receipt, er
 
 // GetContractBytecode 根据合约地址获得bytecode
 func (p *Provider) GetContractBytecode(address common.Address) (string, error) {
-	bytecode, err := p.ec.CodeAt(context.Background(), address, nil) // nil is latest block
+	bytecode, err := p.ec.CodeAt(context.Background(), address, nil) // nil is the latest block
 	if err != nil {
 		return "", err
 	}
