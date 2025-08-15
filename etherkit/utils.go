@@ -4,6 +4,10 @@ import (
 	"crypto/ecdsa"
 	"encoding/hex"
 	"fmt"
+	"math/big"
+	"regexp"
+	"strings"
+
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -11,13 +15,10 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
-	"github.com/miguelmota/go-ethereum-hdwallet"
+	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 	"golang.org/x/crypto/sha3"
-	"math/big"
-	"regexp"
-	"strings"
 )
 
 //############ Address ############
@@ -72,9 +73,7 @@ func GetHexPublicKey(privateKey *ecdsa.PrivateKey) string {
 
 // BuildPrivateKeyFromHex 从字符串私钥构建私钥对象
 func BuildPrivateKeyFromHex(privateKeyHex string) (*ecdsa.PrivateKey, error) {
-	if strings.HasPrefix(privateKeyHex, "0x") {
-		privateKeyHex = privateKeyHex[2:] // remove leading 0x
-	}
+	privateKeyHex = strings.TrimPrefix(privateKeyHex, "0x")
 
 	privateKey, err := crypto.HexToECDSA(privateKeyHex)
 	if err != nil {
@@ -236,11 +235,7 @@ func VerifySignature(address string, data, signature []byte) bool {
 	}
 
 	sigAddress := crypto.PubkeyToAddress(*sigPublicKeyECDSA)
-	if sigAddress.String() == address {
-		return true
-	}
-
-	return false
+	return sigAddress.String() == address
 }
 
 // DecodeRawTxHex 解析rawTx

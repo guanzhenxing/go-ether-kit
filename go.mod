@@ -7,7 +7,7 @@ require (
 	github.com/miguelmota/go-ethereum-hdwallet v0.1.3
 	github.com/pkg/errors v0.9.1
 	github.com/shopspring/decimal v1.4.0
-	golang.org/x/crypto v0.40.0
+	golang.org/x/crypto v0.41.0
 )
 
 require (
@@ -36,5 +36,5 @@ require (
 	github.com/tklauser/numcpus v0.10.0 // indirect
 	github.com/tyler-smith/go-bip39 v1.1.0 // indirect
 	golang.org/x/sync v0.16.0 // indirect
-	golang.org/x/sys v0.34.0 // indirect
+	golang.org/x/sys v0.35.0 // indirect
 )
