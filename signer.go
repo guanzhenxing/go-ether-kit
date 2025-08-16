@@ -2,6 +2,7 @@ package etherkit
 
 import (
 	"crypto/ecdsa"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/pkg/errors"

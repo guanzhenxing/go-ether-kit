@@ -2,6 +2,8 @@ package etherkit
 
 import (
 	"context"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -10,8 +12,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/ethereum/go-ethereum/rpc"
-	"math/big"
 )
 
 // EtherWallet 钱包信息
@@ -51,25 +51,15 @@ func NewWallet(hexPk string, rawUrl string) (*Wallet, error) {
 		return nil, err
 	}
 
-	return NewWallet1(es, ep)
+	return NewWalletWithComponents(es, ep)
 }
 
-// NewWallet1 新建Wallet
-func NewWallet1(es EtherSigner, ep EtherProvider) (*Wallet, error) {
+// NewWalletWithComponents creates a new Wallet with given signer and provider components
+func NewWalletWithComponents(es EtherSigner, ep EtherProvider) (*Wallet, error) {
 	return &Wallet{
 		es: es,
 		ep: ep,
 	}, nil
-}
-
-// GetEthClient 获得ethClient客户端
-func (w *Wallet) getEthClient() *ethclient.Client {
-	return w.ep.GetEthClient()
-}
-
-// GetRpcClient 获得rpcClient客户端
-func (w *Wallet) getRpcClient() *rpc.Client {
-	return w.ep.GetRpcClient()
 }
 
 // GetEthSigner 获得EthSinger
@@ -83,7 +73,7 @@ func (w *Wallet) GetEthProvider() EtherProvider {
 }
 
 func (w *Wallet) GetClient() *ethclient.Client {
-	return w.getEthClient()
+	return w.ep.GetEthClient()
 }
 
 // GetAddress 获得地址
@@ -98,12 +88,12 @@ func (w *Wallet) CloseWallet() {
 
 // GetNonce 获得nonce
 func (w *Wallet) GetNonce() (uint64, error) {
-	return w.getEthClient().PendingNonceAt(context.Background(), w.GetAddress())
+	return w.GetClient().PendingNonceAt(context.Background(), w.GetAddress())
 }
 
 // GetBalance 获得本位币的约
 func (w *Wallet) GetBalance() (*big.Int, error) {
-	return w.getEthClient().BalanceAt(context.Background(), w.GetAddress(), nil)
+	return w.GetClient().BalanceAt(context.Background(), w.GetAddress(), nil)
 }
 
 // NewTx 构建一笔交易。nonce传0表示字段计算；gasLimit传0表示字段计算；gasPrice穿nil或者big.NewInt(0)表示gasPrice自动计算。
@@ -226,7 +216,7 @@ func (w *Wallet) SignTx(tx *types.Transaction) (*types.Transaction, error) {
 
 // SendSignedTx 发送签名后的Tx
 func (w *Wallet) SendSignedTx(signedTx *types.Transaction) (common.Hash, error) {
-	err := w.getEthClient().SendTransaction(context.Background(), signedTx)
+	err := w.GetClient().SendTransaction(context.Background(), signedTx)
 	if err != nil {
 		return [32]byte{}, err
 	}
@@ -249,7 +239,7 @@ func (w *Wallet) CallContract(contractAddress common.Address, contractAbi abi.AB
 		return nil, err
 	}
 
-	res, err := w.getEthClient().CallContract(context.TODO(), ethereum.CallMsg{
+	res, err := w.GetClient().CallContract(context.TODO(), ethereum.CallMsg{
 		To:   &contractAddress,
 		Data: inputData,
 	}, nil)

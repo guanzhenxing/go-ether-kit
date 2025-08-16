@@ -32,7 +32,7 @@ package main
 import (
     "fmt"
     "log"
-    "github.com/guanzhenxing/go-ether-kit/etherkit"
+    "github.com/guanzhenxing/go-ether-kit"
 )
 
 func main() {
@@ -55,7 +55,7 @@ func main() {
     if err != nil {
         log.Fatal(err)
     }
-    fmt.Printf("ETH 余额: %s\n", etherkit.ToDecimal(balance, 18))
+    fmt.Printf("ETH 余额: %s\n", etherkit.ToDecimal(balance, etherkit.EthDecimals))
 }
 ```
 
@@ -64,7 +64,7 @@ func main() {
 ```go
 func sendETH(wallet *etherkit.Wallet) {
     toAddress := common.HexToAddress("0x742F35Cc6634C0532925a3b8D6dA2e")
-    amount := etherkit.ToWei("0.1", 18) // 0.1 ETH
+    amount := etherkit.ToWei("0.1", etherkit.EthDecimals) // 0.1 ETH
     
     txHash, err := wallet.SendTx(
         toAddress,     // 收款地址
@@ -110,7 +110,7 @@ func transferToken(wallet *etherkit.Wallet) {
     
     // 转账代币
     toAddress := common.HexToAddress("0x742F35Cc6634C0532925a3b8D6dA2e")
-    amount := etherkit.ToWei("100", 6) // 100 USDC (6 位小数)
+    amount := etherkit.ToWei("100", etherkit.USDCDecimals) // 100 USDC
     
     tx, err := token.Transfer(opts, toAddress, amount)
     if err != nil {
@@ -195,8 +195,8 @@ signedTx, err := wallet.SignTx(tx)
 
 ```go
 // 单位转换
-wei := etherkit.ToWei("1.5", 18)        // 1.5 ETH 转 wei
-eth := etherkit.ToDecimal(wei, 18)      // wei 转 ETH
+wei := etherkit.ToWei("1.5", etherkit.EthDecimals)     // 1.5 ETH 转 wei
+eth := etherkit.ToDecimal(wei, etherkit.EthDecimals)   // wei 转 ETH
 
 // 地址验证
 isValid := etherkit.IsValidAddress("0x...")
@@ -207,36 +207,82 @@ isValid := etherkit.VerifySignature(address, data, signature)
 // 合约工具
 methodID := etherkit.GetContractMethodId("transfer(address,uint256)")
 eventTopic := etherkit.GetEventTopic("Transfer(address,address,uint256)")
+
+// 常量使用
+chainID := etherkit.MainnetChainID  // 主网链ID
+gasPrice := etherkit.DefaultGasPriceBig  // 默认Gas价格
 ```
 
 ## 📁 项目结构
 
 ```
 go-ether-kit/
-├── etherkit/           # 核心包
-│   ├── provider.go     # 网络连接和查询
-│   ├── signer.go       # 账户和签名
-│   ├── wallet.go       # 钱包操作
-│   └── utils.go        # 工具函数
-├── contracts/          # 智能合约绑定
-│   └── erc20/         # ERC20 合约
+├── provider.go        # 网络连接和查询
+├── signer.go          # 账户和签名管理
+├── wallet.go          # 钱包操作
+├── address.go         # 地址相关工具
+├── crypto.go          # 加密相关功能
+├── contract.go        # 智能合约工具
+├── transaction.go     # 交易相关功能
+├── convert.go         # 单位转换工具
+├── constants.go       # 常量定义
+├── errors.go          # 错误定义
+├── contracts/         # 智能合约绑定
+│   └── erc20/        # ERC20 合约
 │       └── erc20.go
+├── examples/          # 使用示例
+│   ├── basic/        # 基础功能示例
+│   ├── erc20/        # ERC20 操作示例
+│   ├── advanced/     # 高级功能示例
+│   └── README.md
+├── *_test.go         # 单元测试文件
 ├── go.mod
 ├── go.sum
+├── Makefile          # 构建和开发工具
 ├── LICENSE
 └── README.md
 ```
 
+## 🚀 最新改进 (v2.0)
+
+### 项目结构优化
+- ✅ **扁平化包结构** - 代码直接位于根目录，无需子包导入
+- ✅ **模块化文件组织** - 按功能拆分为专门文件
+- ✅ **统一错误处理** - 标准化错误定义和处理
+- ✅ **丰富的常量库** - 预定义网络、Gas、地址等常量
+
+### 代码质量提升
+- ✅ **完整单元测试** - 全面的测试覆盖
+- ✅ **详细使用示例** - 基础、ERC20、高级功能示例
+- ✅ **性能基准测试** - 关键功能性能监控
+- ✅ **标准化命名** - 更符合Go语言习惯
+
+### 开发体验改善
+- ✅ **Makefile 工具** - 完整的开发和构建工具链
+- ✅ **丰富文档** - 详细的API文档和使用指南
+- ✅ **错误提示优化** - 清晰的错误信息和调试支持
+
 ## 🌐 支持的网络
 
-- **以太坊主网** - Chain ID: 1
-- **Goerli 测试网** - Chain ID: 5  
-- **Sepolia 测试网** - Chain ID: 11155111
-- **Polygon 主网** - Chain ID: 137
-- **BSC 主网** - Chain ID: 56
-- **Arbitrum One** - Chain ID: 42161
-- **Optimism** - Chain ID: 10
-- 以及其他 EVM 兼容网络
+| 网络名称 | Chain ID | 符号 | 区块时间 | 确认数 |
+|---------|----------|------|----------|--------|
+| Ethereum Mainnet | 1 | ETH | 12s | 12 |
+| Goerli Testnet | 5 | ETH | 12s | 3 |
+| Sepolia Testnet | 11155111 | ETH | 12s | 3 |
+| Polygon | 137 | MATIC | 2s | 20 |
+| BSC | 56 | BNB | 3s | 15 |
+| Arbitrum One | 42161 | ETH | - | - |
+| Optimism | 10 | ETH | - | - |
+
+使用预定义常量：
+```go
+// 直接使用链ID常量
+provider := etherkit.NewProviderWithChainId(rpcURL, etherkit.MainnetChainID)
+
+// 获取网络配置
+config := etherkit.NetworkConfigs[etherkit.PolygonChainID]
+fmt.Printf("网络: %s, 符号: %s\n", config.Name, config.Symbol)
+```
 
 ## 🔧 高级用法
 
