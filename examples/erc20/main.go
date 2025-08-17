@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
-	etherkit "github.com/guanzhenxing/go-ether-kit"
-	"github.com/guanzhenxing/go-ether-kit/contracts/erc20"
+	etherkit "github.com/guanzhenxing/go-evm-kit"
+	"github.com/guanzhenxing/go-evm-kit/contracts/erc20"
 )
 
 func main() {

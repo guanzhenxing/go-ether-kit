@@ -1,4 +1,4 @@
-module github.com/guanzhenxing/go-ether-kit
+module github.com/guanzhenxing/go-evm-kit
 
 go 1.23.0
 
